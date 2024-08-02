@@ -1,0 +1,4 @@
+    {
+        "env": "dev",
+        "database_uri": "postgresql://postgres:postgres@localhost:5432/library"
+    }
