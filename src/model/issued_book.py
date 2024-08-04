@@ -1,9 +1,11 @@
-from .base import Base, db
 from sqlalchemy import ForeignKey
-from sqlalchemy.sql.schema import Column
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.sqltypes import Integer, String, DateTime
+from sqlalchemy.sql.schema import Column
+from sqlalchemy.sql.sqltypes import DateTime, Integer, String
+
 from common.enums import BookStatus
+
+from .base import Base, db
 
 
 class IssuedBook(Base):

@@ -4,12 +4,23 @@ from . import api
 
 user = api.model(
     "user",
-    {"id": Integer(), "username": String(), "email": String(), "created_at": String()},
+    {
+        "id": Integer(),
+        "username": String(),
+        "email": String(),
+        "created_at": String(),
+        "password": String(required=True),
+        "role_id": Integer,
+    },
 )
 
 user_expect = api.model(
     "user_expect",
-    {"username": String(required=True), "email": String(required=True)},
+    {
+        "username": String(required=True),
+        "email": String(required=True),
+        "password": String(required=True),
+    },
     strict=True,
 )
 
@@ -29,4 +40,9 @@ user_list_response = api.model(
         "data": Nested(user, skip_none=True, allow_null=True, as_list=True),
         "errors": List(String),
     },
+)
+
+user_login_expect = api.model(
+    "user_login_expect",
+    {"email": String(required=True), "password": String(required=True)},
 )

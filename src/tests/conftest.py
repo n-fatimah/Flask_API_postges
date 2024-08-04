@@ -1,10 +1,10 @@
 import pytest
-from requests_flask_adapter import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from app import app
 from model.base import Base, db
+from requests_flask_adapter import Session
 
 base_url = "http://127.0.0.1:5000/api/v1/"
 

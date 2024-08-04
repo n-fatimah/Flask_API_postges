@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime
+import hashlib
+from datetime import datetime, timedelta
 from typing import Union
 
+import jwt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, DateTime, Integer
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
+
+from config import settings
 
 db = SQLAlchemy(session_options={"autoflush": False})
 

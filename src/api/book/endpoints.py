@@ -13,7 +13,7 @@ from . import api
 
 @api.route("/")
 class BookList(Resource):
-    @api.doc("Add a new Book")
+    @api.doc("Add a book")
     @api.expect(schemas.book_expect, validate=True)
     @api.marshal_list_with(schemas.book_response, skip_none=True)
     def post(self) -> Tuple[Dict, int]:
@@ -27,7 +27,7 @@ class BookList(Resource):
         book = Book.get_by_title_author(api.payload["title"], api.payload["author"])
 
         if book:
-            err = ["Either Book already exists"]
+            err = "Either Book already exists"
             return failure_response(err, HTTPStatus.BAD_REQUEST)
 
         api.payload["available_quantity"] = api.payload["quantity"]
@@ -90,7 +90,7 @@ class UpdateBook(Resource):
             api.payload["author"] = book.author
 
         if Book.get_by_title_author(
-            book_id, api.payload["title"], api.payload["author"]
+            api.payload["title"], api.payload["author"], book_id
         ):
             return failure_response(
                 "Book with same title and author already exists", HTTPStatus.BAD_REQUEST

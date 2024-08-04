@@ -1,26 +1,29 @@
+import hashlib
 import logging
 from http import HTTPStatus
 from typing import Dict, Tuple
 
-from flask import g, request
+from flask import g, jsonify, request
 from flask_restx import Resource
 
 from api.user import schemas
 from helpers.api import auth
+from helpers.auth import generate_jwt
 from helpers.responses import failure_response, success_response
 from model.user import User
 
 from . import api
 
 
-@api.route("/")
-class UserList(Resource):
-    @api.doc("Add new user")
+@api.route("/signup")
+class SignUp(Resource):
+    @api.doc("Sign Up")
     @api.expect(schemas.user_expect, validate=True)
     @api.marshal_list_with(schemas.user_response, skip_none=True)
+    @auth("/user/signup")
     def post(self) -> Tuple[Dict, int]:
         """
-        Add new user
+        Sign Up
 
         Returns:
             User
@@ -30,13 +33,54 @@ class UserList(Resource):
         if user:
             return failure_response(["Cannot add a user."], HTTPStatus.BAD_REQUEST)
 
+        hashed_password = hashlib.sha256(api.payload["password"].encode()).hexdigest()
+        api.payload["password"] = hashed_password
+        role_id = user.role_id
+
+        token = generate_jwt(user.id, role_id)
+        logging.info(f"token: {token}")
         user = User(**api.payload).insert()
+
         return success_response(user, HTTPStatus.CREATED)
 
+
+@api.route("/login")
+class Login(Resource):
+    @api.doc("User login")
+    @api.expect(schemas.user_login_expect, validate=True)
+    @api.marshal_list_with(schemas.user_response, skip_none=True)
+    @auth("/user/login")
+    def post(self):
+        """
+        Authenticate user and return JWT token
+
+        Returns:
+            JWT token
+        """
+        api.logger.info("User login")
+        email = api.payload["email"]
+        password = api.payload["password"]
+
+        user = User.get_by_email(email)
+        if not user or not user.check_password(user.password, password):
+            return failure_response(
+                ["Invalid email or password."], HTTPStatus.UNAUTHORIZED
+            )
+
+        role_id = user.role_id
+        token = generate_jwt(user.id, role_id)
+        logging.info(f"token: {token}")
+
+        return success_response(user, HTTPStatus.OK)
+
+
+@api.route("/list")
+class UserList(Resource):
     @api.doc("List users")
     @api.param("page")
     @api.param("per_page")
     @api.marshal_list_with(schemas.user_list_response, skip_none=True)
+    @auth("/user/list")
     def get(self) -> Tuple[Dict, int]:
         """
         Get all users

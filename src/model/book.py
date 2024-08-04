@@ -1,8 +1,10 @@
 from typing import Union
-from .base import Base, db
+
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Integer, String
-from sqlalchemy.orm import relationship
+
+from .base import Base, db
 
 
 class Book(Base):
@@ -16,22 +18,23 @@ class Book(Base):
 
     @classmethod
     def get_by_title_author(
-        cls, book_id: int, title: str, author: str
+        cls, title: str, author: str, book_id: int = None
     ) -> Union["Book", None]:
         """
         Get Book by title and author
 
         Args:
-            title: book title and author
+            title: book title
+            author: book author
+            book_id: book ID to exclude (used for updates)
 
         Returns:
             Book
         """
-        return (
-            db.session.query(cls)
-            .filter(Book.title == title, Book.author == author, Book.id != book_id)
-            .first()
-        )
+        query = db.session.query(cls).filter(Book.title == title, Book.author == author)
+        if book_id:
+            query = query.filter(Book.id != book_id)
+        return query.first()
 
     @classmethod
     def get_all_available(cls, page: int, per_page: int):
